@@ -3,6 +3,7 @@
 - SELECT, INSERT, UPDATE, DELETE, RELATIONS
 
 ## SELECT
+
 ```ts
 /*
     -- SELECT
@@ -107,7 +108,7 @@ class RelationQueryBuilder {
 - where() / andWhere() / orWhere()
 - orderBy() / andOrderBy()
 - skip() / take()
-- join() / innerJoinAndSelect() / leftJoinAndSelect() 
+- join() / innerJoinAndSelect() / leftJoinAndSelect()
 
 ## SubQuery
 
