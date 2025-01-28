@@ -15,5 +15,9 @@
 [일정]
 |week|chapter|발표자|발표내용|
 |---|---|---|---|
+|1|4-7|juyeong-repo|nest 환경설정, crud, 디버깅|
+|2|8|finitestateman|typeORM|
+|3|-|-|-|
+
 
 - 불편사항은 스터디장에게 개인연락 주시면 감사하겠습니다 ☺️
