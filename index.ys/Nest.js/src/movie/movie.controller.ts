@@ -31,7 +31,7 @@ export class MovieController {
   }
 
   @Post()
-  postMoive(@Body() body: CreateMovieDto): Movie {
+  postMoive(@Body() body: CreateMovieDto) {
     return this.movieService.createMovie(body);
   }
 
