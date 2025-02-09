@@ -51,6 +51,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('private')
   async private(@Request() req) {
+    console.log(req.user);
     return req.user;
   }
 }
