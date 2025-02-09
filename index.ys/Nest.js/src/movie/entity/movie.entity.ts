@@ -4,14 +4,18 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  ManyToMany,
+  ManyToOne,
   OneToOne,
   PrimaryColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   VersionColumn,
 } from 'typeorm';
-import { BaseTable } from './base-table.entity';
+import { BaseTable } from '../../common/entity/base-table.entity';
 import { MovieDetail } from './movie-detail.entity';
+import { Director } from 'src/director/entity/director.entity';
+import { Genre } from 'src/genre/entity/genre.entity';
 
 // ManyToOne 감독은 여러개의 영화 감독 : 영화 = 1:N
 // OneToOne 영화는 1개의 상세 내용  영화 : 내용 = 1:1
@@ -22,13 +26,25 @@ export class Movie extends BaseTable {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({
+    unique: true,
+  })
   title: string;
   // 값 변경
-  @Column()
-  genre: string;
 
-  @OneToOne(() => MovieDetail)
+  @ManyToMany(() => Genre, (genre) => genre.movies)
+  genres: Genre[];
+
+  @OneToOne(() => MovieDetail, (movieDetail) => movieDetail.id, {
+    cascade: true,
+    nullable: false,
+  })
   @JoinColumn() // movie가 moviedetail을 가지고 있음
   detail: MovieDetail;
+
+  @ManyToOne(() => Director, (director) => director.id, {
+    cascade: true,
+    nullable: false,
+  })
+  director: Director;
 }
