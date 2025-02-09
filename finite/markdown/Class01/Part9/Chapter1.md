@@ -69,7 +69,7 @@ interface PipeTransform<T = any, R = any> {
 export class MyPipe<T = any, R = any> implements PipeTransform<T, R> { // PipeTransform<매개변수 타입, 반환 타입>
 
     // 필요할 경우 options 사용
-    constructor(private readonly options?: { allowEmpty?: boolean })
+    constructor(private readonly options?: { allowNull?: boolean })
 
     // 구현해야하는 메서드
     transform(value: T, metadata: ArgumentMetadata): R {
@@ -92,5 +92,5 @@ findOne(@Param('id', MyPipe) movieId: number) {}
 
 
 // ex2. { type: 'query', metadata: 'String' data: 'title' }
-findAll(@Query('title', new MyPipe<string, string>({ allowEmpty: true })) movieTitle: string)
+findAll(@Query('title', new MyPipe<string, string>({ allowNull: true })) movieTitle: string)
 ```
