@@ -1,0 +1,3 @@
+[submodule "finite/netflix"]
+	path = finite/netflix
+	url = https://github.com/finitestateman/netflix
