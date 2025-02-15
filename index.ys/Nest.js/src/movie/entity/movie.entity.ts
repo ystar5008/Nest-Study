@@ -35,6 +35,9 @@ export class Movie extends BaseTable {
   @ManyToMany(() => Genre, (genre) => genre.movies)
   genres: Genre[];
 
+  @Column({ default: 0 })
+  likeCount: number;
+
   @OneToOne(() => MovieDetail, (movieDetail) => movieDetail.id, {
     cascade: true,
     nullable: false,

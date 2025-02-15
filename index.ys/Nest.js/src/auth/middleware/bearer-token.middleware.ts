@@ -19,8 +19,9 @@ export class BearerTokenMiddleware implements NestMiddleware {
   async use(req: Request, res: Response, next: NextFunction) {
     // Basic $token
     // Bearer $token
-    const authHeader = req.header['authorization'];
+    const authHeader = req.headers['authorization'];
 
+    console.log(authHeader);
     if (!authHeader) {
       // 다음 생명주기로 이동
       next();
@@ -31,14 +32,14 @@ export class BearerTokenMiddleware implements NestMiddleware {
 
     try {
       // 검증X 디코드
-      const decoedPayload = this.jwtService.decode(token);
+      const decodePayload = this.jwtService.decode(token);
 
-      if (decoedPayload.type !== 'refresh' && decoedPayload.type !== 'access') {
+      if (decodePayload.type !== 'refresh' && decodePayload.type !== 'access') {
         throw new UnauthorizedException('잘못된 토큰');
       }
 
       const secretKey =
-        decoedPayload === 'refresh'
+        decodePayload === 'refresh'
           ? envVariableKeys.refreshTokenSecret
           : envVariableKeys.accessTokenSecret;
 
@@ -50,7 +51,10 @@ export class BearerTokenMiddleware implements NestMiddleware {
       req.user = payload;
       next();
     } catch (e) {
-      throw new UnauthorizedException('토큰 만료');
+      if (e.name === 'TokenExpiredError') {
+        throw new UnauthorizedException('토큰이 만료됐습니다.');
+      }
+      next();
     }
   }
 

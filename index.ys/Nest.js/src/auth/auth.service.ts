@@ -8,7 +8,7 @@ import { User } from 'src/user/entity/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { envVariableKeys } from '../common/const/env.const';
 
 @Injectable()
@@ -85,7 +85,12 @@ export class AuthService {
 
       return payload;
     } catch (e) {
-      throw new UnauthorizedException('토큰 만료');
+      if (e instanceof TokenExpiredError) {
+        throw new UnauthorizedException('토큰 만료');
+      }
+
+      throw e;
+      //// 토큰 에러처리
     }
   }
 
@@ -159,7 +164,7 @@ export class AuthService {
       },
       {
         secret: isRefreshToken ? refreshTokenSecret : accessTokenSecret,
-        expiresIn: isRefreshToken ? '24h' : 300,
+        expiresIn: isRefreshToken ? '24h' : 5000000,
       },
     );
   }
