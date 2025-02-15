@@ -14,6 +14,7 @@ import {
   ParseFloatPipe,
   DefaultValuePipe,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { MovieService } from './movie.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
@@ -25,6 +26,8 @@ import { Public } from 'src/auth/decorator/public.decorator';
 import { RBAC } from 'src/auth/decorator/rbac.decorator';
 import { Role } from 'src/user/entity/user.entity';
 import { GetMoviesDto } from './dto/get-movies.dto';
+import { CacheInterceptor } from 'src/common/interceptor/cache.interceptor';
+import { TranscationInterceptor } from 'src/common/interceptor/transaction.interceptor';
 
 @Controller('movie')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -34,6 +37,7 @@ export class MovieController {
   @Get()
   //로그인하지 안하도 조회 가능
   @Public()
+  // @UseInterceptors(CacheInterceptor)
   getMovies(@Query() dto: GetMoviesDto) {
     return this.movieService.findAll(dto);
   }
@@ -48,8 +52,9 @@ export class MovieController {
   @Post()
   //admin 유저만 요청가능
   @RBAC(Role.admin)
-  postMoive(@Body() body: CreateMovieDto) {
-    return this.movieService.create(body);
+  @UseInterceptors(TranscationInterceptor)
+  postMovie(@Body() body: CreateMovieDto, @Request() req) {
+    return this.movieService.create(body, req.queryRunner);
   }
 
   @Patch(':id')

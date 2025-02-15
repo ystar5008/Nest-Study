@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, IsIn } from 'class-validator';
+import { IsInt, IsOptional, IsIn, IsArray, IsString } from 'class-validator';
 
 enum Order {
   ASC = 'ASC',
@@ -6,13 +6,17 @@ enum Order {
 }
 
 export class CursorPaginationDto {
-  @IsInt()
+  @IsString()
   @IsOptional()
-  id: number;
+  // id_52,likeCount_20
+  cursor?: string;
 
-  @IsIn(Object.values(Order))
+  @IsArray()
+  @IsString({
+    each: true,
+  })
   @IsOptional()
-  order: Order = Order.DESC;
+  order: string[] = ['id_DESC'];
 
   @IsInt()
   @IsOptional()
