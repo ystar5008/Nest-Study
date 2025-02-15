@@ -21,7 +21,7 @@
 
 객체 { name: "Alice", age: 25 } → {"name":"Alice","age":25} (JSON 형식으로 변환)
 
-이직렬화:
+이진 직렬화:
 객체를 이진 형식으로 변환하여 더 효율적으로 저장하거나 전송할 수 있습니다.
 
 직렬화 과정
@@ -32,3 +32,8 @@
 결론
 
 직렬화는 객체를 저장하거나 네트워크를 통해 전송할 수 있도록 변환하는 과정이며, 저장 형식으로는 주로 JSON, XML, 바이너리 형식 등이 사용됩니다.
+
+[Object.freeze()](https://chatgpt.com/share/6798c5e4-8950-8000-b1b5-1ecc491f5e38)
+[ClassSerializerInterceptor 사용하지 않고 목적 달성하기](https://velog.io/@intellik/Serialize%EB%8A%94-%EB%A8%B9%EB%8A%94-%EA%B2%8C-%EC%95%84%EB%8B%99%EB%8B%88%EB%8B%A4-%EC%A7%81%EB%A0%AC%ED%99%94-%EA%B0%9C%EB%85%90%EA%B3%BC-NestJS%EC%97%90%EC%84%9C%EC%9D%98-%EC%A7%81%EB%A0%AC%ED%99%94)
+[NestJS에서 응답/요청 객체 직렬화 (Serialization) 하기](https://jojoldu.tistory.com/610)
+[NestJS - Serialization](https://docs.nestjs.com/techniques/serialization)
