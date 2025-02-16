@@ -10,11 +10,13 @@ import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { LocalAuthGuard } from './strategy/local.strategy';
 import { JwtAuthGuard } from './jwt.strategy';
+import { Public } from './decorator/public.decorator';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Public()
   @Post('register')
   registerUser(
     // authorization: Basic $token
@@ -23,17 +25,18 @@ export class AuthController {
     return this.authService.register(token);
   }
 
+  @Public()
   @Post('login')
   loginUser(@Headers('authorization') token: string) {
     return this.authService.login(token);
   }
 
   @Post('token/access')
-  async rotateAccessToken(@Headers('authorization') token: string) {
-    const payload = await this.authService.parseBearerToken(token, true);
+  async rotateAccessToken(@Request() req) {
+    //const payload = await this.authService.parseBearerToken(token, true);
 
     return {
-      accessToken: await this.authService.issueToken(payload, false),
+      accessToken: await this.authService.issueToken(req.user, false),
     };
   }
 
