@@ -5,6 +5,10 @@ import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { join } from 'path';
 import { v4 } from 'uuid';
+import { TasksService } from './tasks.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Movie } from 'src/movie/entity/movie.entity';
+import { DefaultLogger } from './logger/default.logger';
 
 @Module({
   imports: [
@@ -24,9 +28,10 @@ import { v4 } from 'uuid';
         },
       }),
     }),
+    TypeOrmModule.forFeature([Movie]),
   ],
   controllers: [CommonController],
-  providers: [CommonService],
-  exports: [CommonService],
+  providers: [CommonService, TasksService, DefaultLogger],
+  exports: [CommonService, DefaultLogger],
 })
 export class CommonModule {}

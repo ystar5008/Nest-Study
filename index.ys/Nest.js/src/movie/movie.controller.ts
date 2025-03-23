@@ -38,6 +38,12 @@ import { MovieFilePipe } from './pipe/movie-file.pipe';
 import { UserId } from 'src/user/decorator/user-id.decorator';
 import { QueryRunner } from 'src/common/decorator/queryrunner.decorator';
 import { QueryRunner as QR } from 'typeorm';
+import {
+  CacheKey,
+  CacheTTL,
+  CacheInterceptor as CI,
+} from '@nestjs/cache-manager';
+import { Throttle } from 'src/common/decorator/throttle.decorator';
 
 @Controller('movie')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -47,11 +53,27 @@ export class MovieController {
   @Get()
   //로그인하지 안하도 조회 가능
   @Public()
+  @Throttle({
+    // 유저당 분당 5번 요청 가능
+    count: 5,
+    unit: 'minute',
+  })
   // @UseInterceptors(CacheInterceptor)
   getMovies(@Query() dto: GetMoviesDto, @UserId() userId?: number) {
     return this.movieService.findAll(dto);
   }
 
+  // 캐시데이터 반환
+  @Get('recent')
+  @UseInterceptors(CI)
+  @CacheKey('getMoviesRecent')
+  @CacheTTL(1000)
+  getMoviesRecent() {
+    console.log('getMoviesRecent 실행');
+    return this.movieService.findRecent();
+  }
+
+  // catchall
   @Get(':id')
   //로그인하지 안하도 조회 가능
   @Public()

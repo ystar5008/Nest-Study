@@ -1,5 +1,7 @@
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NestMiddleware,
   UnauthorizedException,
@@ -14,6 +16,8 @@ export class BearerTokenMiddleware implements NestMiddleware {
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
   ) {}
 
   async use(req: Request, res: Response, next: NextFunction) {
@@ -30,14 +34,27 @@ export class BearerTokenMiddleware implements NestMiddleware {
 
     const token = this.validateBearerToken(authHeader);
 
+    const blockedToken = await this.cacheManager.get(`BLOCK_TOKEN_${token}`);
+
+    if (blockedToken) {
+      throw new UnauthorizedException('차단된 토큰');
+    }
+
+    const cachedPayload = await this.cacheManager.get(`TOKEN_${token}`);
+
+    if (cachedPayload) {
+      console.log('cache hit');
+      req.user = cachedPayload;
+      return next();
+    }
+    // 검증X 디코드
+    const decodePayload = this.jwtService.decode(token);
+
+    if (decodePayload.type !== 'refresh' && decodePayload.type !== 'access') {
+      throw new UnauthorizedException('잘못된 토큰');
+    }
+
     try {
-      // 검증X 디코드
-      const decodePayload = this.jwtService.decode(token);
-
-      if (decodePayload.type !== 'refresh' && decodePayload.type !== 'access') {
-        throw new UnauthorizedException('잘못된 토큰');
-      }
-
       const secretKey =
         decodePayload === 'refresh'
           ? envVariableKeys.refreshTokenSecret
@@ -46,6 +63,17 @@ export class BearerTokenMiddleware implements NestMiddleware {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: this.configService.get<string>(secretKey),
       });
+
+      const expiryDate = +new Date(payload['exp'] * 1000);
+      const now = Date.now();
+
+      const differenceInSecdons = (expiryDate - now) / 1000;
+
+      await this.cacheManager.set(
+        `TOKEN_${token}`,
+        payload,
+        Math.max((differenceInSecdons - 30) * 1000, 1),
+      );
 
       //요청 객체에 payload전달
       req.user = payload;
