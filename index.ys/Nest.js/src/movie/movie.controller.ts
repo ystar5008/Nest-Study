@@ -15,19 +15,29 @@ import {
   DefaultValuePipe,
   UseGuards,
   Request,
+  UploadedFile,
+  UploadedFiles,
+  BadRequestException,
 } from '@nestjs/common';
 import { MovieService } from './movie.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
-import { Movie } from './entity/movie.entity';
-import { MovieTitleValidationPipe } from './pipe/movie.-title-validation.pipe';
-import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { Public } from 'src/auth/decorator/public.decorator';
 import { RBAC } from 'src/auth/decorator/rbac.decorator';
 import { Role } from 'src/user/entity/user.entity';
 import { GetMoviesDto } from './dto/get-movies.dto';
 import { CacheInterceptor } from 'src/common/interceptor/cache.interceptor';
 import { TranscationInterceptor } from 'src/common/interceptor/transaction.interceptor';
+import {
+  FileFieldsInterceptor,
+  FileInterceptor,
+  FilesInterceptor,
+} from '@nestjs/platform-express';
+import { Movie } from './entity/movie.entity';
+import { MovieFilePipe } from './pipe/movie-file.pipe';
+import { UserId } from 'src/user/decorator/user-id.decorator';
+import { QueryRunner } from 'src/common/decorator/queryrunner.decorator';
+import { QueryRunner as QR } from 'typeorm';
 
 @Controller('movie')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -38,7 +48,7 @@ export class MovieController {
   //로그인하지 안하도 조회 가능
   @Public()
   // @UseInterceptors(CacheInterceptor)
-  getMovies(@Query() dto: GetMoviesDto) {
+  getMovies(@Query() dto: GetMoviesDto, @UserId() userId?: number) {
     return this.movieService.findAll(dto);
   }
 
@@ -53,8 +63,12 @@ export class MovieController {
   //admin 유저만 요청가능
   @RBAC(Role.admin)
   @UseInterceptors(TranscationInterceptor)
-  postMovie(@Body() body: CreateMovieDto, @Request() req) {
-    return this.movieService.create(body, req.queryRunner);
+  postMovie(
+    @Body() body: CreateMovieDto,
+    @QueryRunner() queryRunner: QR,
+    @UserId() userId: number,
+  ) {
+    return this.movieService.create(body, queryRunner, userId);
   }
 
   @Patch(':id')
@@ -72,5 +86,21 @@ export class MovieController {
   @RBAC(Role.admin)
   deleteMoive(@Param('id', ParseIntPipe) id: string) {
     return this.movieService.remove(+id);
+  }
+
+  @Post(':id/like')
+  createMovieLike(
+    @Param('id', ParseIntPipe) movieId: number,
+    @UserId() userId: number,
+  ) {
+    return this.movieService.toggleMovieLike(movieId, userId, true);
+  }
+
+  @Post(':id/dislike')
+  createMovieDislike(
+    @Param('id', ParseIntPipe) movieId: number,
+    @UserId() userId: number,
+  ) {
+    return this.movieService.toggleMovieLike(movieId, userId, false);
   }
 }
