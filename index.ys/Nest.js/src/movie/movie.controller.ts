@@ -18,6 +18,9 @@ import {
   UploadedFile,
   UploadedFiles,
   BadRequestException,
+  Version,
+  VERSION_NEUTRAL,
+  Req,
 } from '@nestjs/common';
 import { MovieService } from './movie.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
@@ -44,8 +47,27 @@ import {
   CacheInterceptor as CI,
 } from '@nestjs/cache-manager';
 import { Throttle } from 'src/common/decorator/throttle.decorator';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+
+// @Controller({
+//   path: 'movie',
+//   version: '2',
+// })
+// export class MovieControllerV2 {
+//   @Get()
+//   getMovies() {
+//     return [];
+//   }
+// }
 
 @Controller('movie')
+@ApiBearerAuth()
+@ApiTags('movie')
 @UseInterceptors(ClassSerializerInterceptor)
 export class MovieController {
   constructor(private readonly movieService: MovieService) {}
@@ -58,7 +80,19 @@ export class MovieController {
     count: 5,
     unit: 'minute',
   })
+  //v5
   // @UseInterceptors(CacheInterceptor)
+  @ApiOperation({
+    description: '[Movie]를 Pagination하는 API',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '성공적으로 API Paginations을 실행햇을때',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Pagination데이터를 잘못입력했을떄',
+  })
   getMovies(@Query() dto: GetMoviesDto, @UserId() userId?: number) {
     return this.movieService.findAll(dto);
   }
@@ -77,7 +111,16 @@ export class MovieController {
   @Get(':id')
   //로그인하지 안하도 조회 가능
   @Public()
-  getMovie(@Param('id', ParseFloatPipe) id: number) {
+  getMovie(@Param('id', ParseFloatPipe) id: number, @Req() request: any) {
+    const session = request.session;
+
+    const movieCount = session.movieCount ?? {};
+
+    request.session.movieCount = {
+      ...movieCount,
+      [id]: movieCount[id] ? movieCount[id] + 1 : 1,
+    };
+    console.log(session);
     return this.movieService.findOne(id);
   }
 

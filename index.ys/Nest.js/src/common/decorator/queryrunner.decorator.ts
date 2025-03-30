@@ -3,7 +3,6 @@ import {
   ExecutionContext,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { In } from 'typeorm';
 
 export const QueryRunner = createParamDecorator(
   (data, context: ExecutionContext) => {

@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 
 import { MovieModule } from './movie/movie.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConditionalModule, ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as joi from 'joi';
 import { Movie } from './movie/entity/movie.entity';
@@ -33,7 +33,11 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { ThrottleInterceptor } from './common/interceptor/throttle.interceptor';
 import { ScheduleModule } from '@nestjs/schedule';
 import { WinstonLogger, WinstonModule } from 'nest-winston';
+import { ChatModule } from './chat/chat.module';
 import * as winston from 'winston';
+import { ChatRoom } from './chat/entity/chat-room.entity';
+import { Chat } from './chat/entity/chat.entity';
+import { WorkerModule } from './worker/wokrer.module';
 
 @Module({
   imports: [
@@ -62,7 +66,16 @@ import * as winston from 'winston';
         username: configService.get<string>(envVariableKeys.dbUsername),
         password: configService.get<string>(envVariableKeys.dbPassword),
         database: configService.get<string>(envVariableKeys.dbDatabase),
-        entities: [Movie, MovieDetail, Director, Genre, User, MovieUserLike],
+        entities: [
+          Movie,
+          MovieDetail,
+          Director,
+          Genre,
+          User,
+          MovieUserLike,
+          Chat,
+          ChatRoom,
+        ],
         logging: true,
         synchronize: true,
       }),
@@ -113,6 +126,11 @@ import * as winston from 'winston';
       rootPath: join(process.cwd(), 'public'),
       serveRoot: '/public/',
     }),
+    ChatModule,
+    ConditionalModule.registerWhen(
+      WorkerModule,
+      (env: NodeJS.ProcessEnv) => env['TYPE'] === 'worker',
+    ),
   ],
   controllers: [],
   providers: [
